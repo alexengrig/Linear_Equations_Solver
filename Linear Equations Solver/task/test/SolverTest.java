@@ -1,10 +1,11 @@
 import org.hyperskill.hstest.v6.testcase.CheckResult;
 import org.hyperskill.hstest.v6.stage.BaseStageTest;
 import org.hyperskill.hstest.v6.testcase.TestCase;
-
 import solver.Main;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import static java.lang.Math.abs;
 
@@ -18,15 +19,17 @@ public class SolverTest extends BaseStageTest<String> {
     @Override
     public List<TestCase<String>> generate() {
         List<TestCase<String>> tests = List.of(
-            new TestCase<String>().setInput("5 3"),
-            new TestCase<String>().setInput("12 67"),
-            new TestCase<String>().setInput("12 12"),
-            new TestCase<String>().setInput("-1 1"),
-            new TestCase<String>().setInput("2 -3"),
-            new TestCase<String>().setInput("2.34 12.23")
+            new TestCase<String>()
+                .setInput("4 5 7\n3 9 9"),
+            new TestCase<String>()
+                .setInput("1 2 3\n4 5 6"),
+            new TestCase<String>()
+                .setInput("1.2 3.4 5.6\n7.8 9.0 12.3"),
+            new TestCase<String>()
+                .setInput("23.21 32.12 65.43\n1 0 1")
         );
 
-        for (TestCase<String> test : tests) {
+        for (var test : tests) {
             test.setAttach(solve(test.getInput()));
         }
 
@@ -34,18 +37,35 @@ public class SolverTest extends BaseStageTest<String> {
     }
 
     private String solve(String input) {
-        String[] nums = input.split(" ");
-        double a = Double.parseDouble(nums[0]);
-        double b = Double.parseDouble(nums[1]);
-        return String.valueOf(b / a);
+        Scanner sc = new Scanner(input);
+
+        double a = sc.nextDouble();
+        double b = sc.nextDouble();
+        double c = sc.nextDouble();
+        double d = sc.nextDouble();
+        double e = sc.nextDouble();
+        double f = sc.nextDouble();
+
+        double y = (f - c * (d / a)) / (e - b * (d / a));
+        double x = (c - b * y) / a;
+
+        return x + " " + y;
     }
 
     @Override
     public CheckResult check(String reply, String clue) {
         try {
-            double actual = Double.parseDouble(reply);
-            double expected = Double.parseDouble(clue);
-            return new CheckResult(abs(actual - expected) < 0.001);
+            double[] actual = Arrays.stream(reply.split(" ")).mapToDouble(Double::parseDouble).toArray();
+            double[] expected = Arrays.stream(clue.split(" ")).mapToDouble(Double::parseDouble).toArray();
+            if (actual.length != expected.length) {
+                return CheckResult.FALSE;
+            }
+            for (int i = 0; i < actual.length; i++) {
+                if (abs(actual[i] - expected[i]) > 0.001) {
+                    return CheckResult.FALSE;
+                }
+            }
+            return CheckResult.TRUE;
         }
         catch (NumberFormatException ex) {
             return new CheckResult(false, "Can't parse numbers - check if you don't print any additional symbols except a space between the numbers");
